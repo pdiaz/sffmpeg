@@ -1,0 +1,352 @@
+--- a/libavcodec/qsvdec_vc1.c
++++ b/libavcodec/qsvdec_vc1.c
+@@ -52,6 +52,12 @@
+     return ff_qsv_decode(avctx, &s->qsv, frame, got_frame, avpkt);
+ }
+
++static void qsv_decode_flush(AVCodecContext *avctx)
++{
++    QSVVC1Context *s = avctx->priv_data;
++    ff_qsv_decode_reset(avctx, &s->qsv);
++}
++
+ AVHWAccel ff_vc1_qsv_hwaccel = {
+     .name           = "vc1_qsv",
+     .type           = AVMEDIA_TYPE_VIDEO,
+@@ -81,7 +87,7 @@
+     .id             = AV_CODEC_ID_VC1,
+     .init           = NULL,
+     .decode         = qsv_decode_frame,
+-    .flush          = NULL,
++    .flush          = qsv_decode_flush,
+     .close          = qsv_decode_close,
+     .capabilities   = AV_CODEC_CAP_DELAY,
+     .priv_class     = &class,
+
+--- a/libavcodec/qsvdec_h2645.c
++++ b/libavcodec/qsvdec_h2645.c
+@@ -137,8 +137,8 @@
+
+ static void qsv_decode_flush(AVCodecContext *avctx)
+ {
+-//    QSVH2645Context *s = avctx->priv_data;
+-    /* TODO: flush qsv engine if necessary */
++    QSVH2645Context *s = avctx->priv_data;
++    ff_qsv_decode_reset(avctx, &s->qsv);
+ }
+
+ #define OFFSET(x) offsetof(QSVH2645Context, x)
+
+--- a/libavcodec/qsvdec.c
++++ b/libavcodec/qsvdec.c
+@@ -146,10 +146,17 @@
+             return AVERROR(ENOMEM);
+     }
+
+-    q->input_fifo = av_fifo_alloc(1024*16);
+-    if (!q->input_fifo)
+-        return AVERROR(ENOMEM);
++    if (!q->input_fifo) {
++        q->input_fifo = av_fifo_alloc(1024*16);
++        if (!q->input_fifo)
++            return AVERROR(ENOMEM);
++    }
+
++    if (!q->pkt_fifo) {
++        q->pkt_fifo = av_fifo_alloc( sizeof(AVPacket) * (1 + 16) );
++        if (!q->pkt_fifo)
++            return AVERROR(ENOMEM);
++    }
+     q->engine_ready = 1;
+
+     return 0;
+@@ -281,7 +288,26 @@
+     f->rndx = 0;
+ }
+
+-int ff_qsv_decode(AVCodecContext *avctx, QSVContext *q,
++
++static void close_decoder(QSVContext *q)
++{
++    QSVFrame *cur;
++
++    MFXVideoDECODE_Close(q->session);
++
++    cur = q->work_frames;
++    while (cur) {
++        q->work_frames = cur->next;
++        av_frame_free(&cur->frame);
++        av_freep(&cur);
++        cur = q->work_frames;
++    }
++
++    q->engine_ready   = 0;
++    q->reinit_pending = 0;
++}
++
++static int do_qsv_decode(AVCodecContext *avctx, QSVContext *q,
+                   AVFrame *frame, int *got_frame,
+                   AVPacket *avpkt)
+ {
+@@ -293,6 +319,7 @@
+     int ret;
+     int n_out_frames;
+     int buffered = 0;
++    int flush    = !avpkt->size || q->reinit_pending;
+
+     if (!q->engine_ready) {
+         ret = ff_qsv_decode_init(avctx, q, avpkt);
+@@ -300,7 +327,7 @@
+             return ret;
+     }
+
+-    if (avpkt->size ) {
++    if (!flush) {
+         if (av_fifo_size(q->input_fifo)) {
+             /* we have got rest of previous packet into buffer */
+             if (av_fifo_space(q->input_fifo) < avpkt->size) {
+@@ -325,7 +352,7 @@
+         if (ret < 0)
+             return ret;
+         do {
+-            ret = MFXVideoDECODE_DecodeFrameAsync(q->session, avpkt->size ? &bs : NULL,
++            ret = MFXVideoDECODE_DecodeFrameAsync(q->session, flush ? NULL : &bs,
+                                                   insurf, &outsurf, &sync);
+             if (ret != MFX_WRN_DEVICE_BUSY)
+                 break;
+@@ -333,7 +360,11 @@
+         } while (1);
+
+         if (MFX_WRN_VIDEO_PARAM_CHANGED==ret) {
+-            /* TODO: handle here sequence header changing */
++            /* TODO: handle here minor sequence header changing */
++        } else if (MFX_ERR_INCOMPATIBLE_VIDEO_PARAM==ret) {
++            av_fifo_reset(q->input_fifo);
++            flush = q->reinit_pending = 1;
++            continue;
+         }
+
+         if (sync) {
+@@ -357,7 +388,7 @@
+
+     /* make sure we do not enter an infinite loop if the SDK
+      * did not consume any data and did not return anything */
+-    if (!sync && !bs.DataOffset) {
++    if (!sync && !bs.DataOffset && !flush) {
+         av_log(avctx, AV_LOG_WARNING, "A decode call did not consume any data\n");
+         bs.DataOffset = avpkt->size;
+     }
+@@ -376,7 +407,7 @@
+     }
+     n_out_frames = av_fifo_size(q->async_fifo) / (sizeof(out_frame)+sizeof(sync));
+
+-    if (n_out_frames > q->async_depth || (!avpkt->size && n_out_frames) ) {
++    if (n_out_frames > q->async_depth || (flush && n_out_frames) ) {
+         AVFrame *src_frame;
+
+         av_fifo_generic_read(q->async_fifo, &out_frame, sizeof(out_frame), NULL);
+@@ -409,30 +440,145 @@
+
+     return avpkt->size;
+ }
++/*
++ This function inserts a packet at fifo front.
++*/
++static void qsv_packet_push_front(QSVContext *q, AVPacket *avpkt)
++{
++    int fifo_size = av_fifo_size(q->pkt_fifo);
++    if (!fifo_size) {
++    /* easy case fifo is empty */
++        av_fifo_generic_write(q->pkt_fifo, avpkt, sizeof(*avpkt), NULL);
++    } else {
++    /* realloc necessary */
++        AVPacket pkt;
++        AVFifoBuffer *fifo = av_fifo_alloc(fifo_size+av_fifo_space(q->pkt_fifo));
++
++        av_fifo_generic_write(fifo, avpkt, sizeof(*avpkt), NULL);
++
++        while (av_fifo_size(q->pkt_fifo)) {
++            av_fifo_generic_read(q->pkt_fifo, &pkt, sizeof(pkt), NULL);
++            av_fifo_generic_write(fifo,       &pkt, sizeof(pkt), NULL);
++        }
++        av_fifo_free(q->pkt_fifo);
++        q->pkt_fifo = fifo;
++    }
++}
++int ff_qsv_decode(AVCodecContext *avctx, QSVContext *q,
++                  AVFrame *frame, int *got_frame,
++                  AVPacket *avpkt)
++{
++    AVPacket pkt_ref = { 0 };
++    int ret = 0;
+
+-int ff_qsv_decode_close(QSVContext *q)
++    if (q->pkt_fifo && av_fifo_size(q->pkt_fifo) >= sizeof(AVPacket)) {
++        /* we already have got some buffered packets. so add new to tail */
++        ret = av_packet_ref(&pkt_ref, avpkt);
++        if (ret < 0)
++            return ret;
++        av_fifo_generic_write(q->pkt_fifo, &pkt_ref, sizeof(pkt_ref), NULL);
++    }
++    if (q->reinit_pending) {
++        ret = do_qsv_decode(avctx, q, frame, got_frame, avpkt);
++
++        if (!*got_frame) {
++            /* Flushing complete, no more frames  */
++            close_decoder(q);
++            //return ff_qsv_decode(avctx, q, frame, got_frame, avpkt);
++        }
++    }
++    if (!q->reinit_pending) {
++        if (q->pkt_fifo && av_fifo_size(q->pkt_fifo) >= sizeof(AVPacket)) {
++            /* process buffered packets */
++            while (!*got_frame && av_fifo_size(q->pkt_fifo) >= sizeof(AVPacket)) {
++                av_fifo_generic_read(q->pkt_fifo, &pkt_ref, sizeof(pkt_ref), NULL);
++                ret = do_qsv_decode(avctx, q, frame, got_frame, &pkt_ref);
++                if (q->reinit_pending) {
++                    /*
++                       A rare case: new reinit pending when buffering existing.
++                       We should to return the pkt_ref back to same place of fifo
++                    */
++                    qsv_packet_push_front(q, &pkt_ref);
++                } else {
++                    av_packet_unref(&pkt_ref);
++                }
++           }
++        } else {
++            /* general decoding */
++            ret = do_qsv_decode(avctx, q, frame, got_frame, avpkt);
++            if (q->reinit_pending) {
++                ret = av_packet_ref(&pkt_ref, avpkt);
++                if (ret < 0)
++                    return ret;
++                av_fifo_generic_write(q->pkt_fifo, &pkt_ref, sizeof(pkt_ref), NULL);
++            }
++        }
++    }
++
++    return ret;
++}
++/*
++ This function resets decoder and corresponded buffers before seek operation
++*/
++void ff_qsv_decode_reset(AVCodecContext *avctx, QSVContext *q)
+ {
+-    QSVFrame *cur = q->work_frames;
++    QSVFrame *cur;
++    AVPacket pkt;
++    int ret = 0;
++    mfxVideoParam param = { { 0 } };
++
++    if (q->reinit_pending) {
++        close_decoder(q);
++    } else if (q->engine_ready) {
++        ret = MFXVideoDECODE_GetVideoParam(q->session, &param);
++        if (ret < 0) {
++            av_log(avctx, AV_LOG_ERROR, "MFX decode get param error %d\n", ret);
++        }
+
+-    while (cur) {
+-        q->work_frames = cur->next;
+-        av_frame_free(&cur->frame);
+-        av_freep(&cur);
++        ret = MFXVideoDECODE_Reset(q->session, &param);
++        if (ret < 0) {
++            av_log(avctx, AV_LOG_ERROR, "MFX decode reset error %d\n", ret);
++        }
++
++        /* Free all frames*/
+         cur = q->work_frames;
++        while (cur) {
++            q->work_frames = cur->next;
++            av_frame_free(&cur->frame);
++            av_freep(&cur);
++            cur = q->work_frames;
++        }
+     }
+
+-    av_fifo_free(q->async_fifo);
+-    q->async_fifo = NULL;
++    /* Reset output surfaces */
++    av_fifo_reset(q->async_fifo);
+
+-    av_fifo_free(q->input_fifo);
+-    q->input_fifo = NULL;
++    /* Reset input packets fifo */
++    while (av_fifo_size(q->pkt_fifo)) {
++        av_fifo_generic_read(q->pkt_fifo, &pkt, sizeof(pkt), NULL);
++        av_packet_unref(&pkt);
++    }
++
++    /* Reset input bitstream fifo */
++    av_fifo_reset(q->input_fifo);
++}
++
++int ff_qsv_decode_close(QSVContext *q)
++{
++    close_decoder(q);
+
+-    MFXVideoDECODE_Close(q->session);
+     q->session = NULL;
+
+     ff_qsv_close_internal_session(&q->internal_qs);
+
+-    q->engine_ready = 0;
++    av_fifo_free(q->async_fifo);
++    q->async_fifo = NULL;
++
++    av_fifo_free(q->input_fifo);
++    q->input_fifo = NULL;
++
++    av_fifo_free(q->pkt_fifo);
++    q->pkt_fifo = NULL;
+
+     return 0;
+ }
+
+--- a/libavcodec/qsvdec.h
++++ b/libavcodec/qsvdec.h
+@@ -51,10 +51,21 @@
+     AVFifoBuffer *async_fifo;
+     AVFifoBuffer *input_fifo;
+
++    // we should to buffer input packets at some cases
++    // else it is not possible to handle dynamic stream changes correctly
++    // this fifo uses for input packets buffering
++    AVFifoBuffer *pkt_fifo;
++
+     // this flag indicates that header parsed,
+     // decoder instance created and ready to general decoding
+     int engine_ready;
+
++    // we can not just re-init decoder if different sequence header arrived
++    // we should to deliver all buffered frames but we can not decode new packets
++    // this time. So when reinit_pending is non-zero we flushing decoder and
++    // accumulate new arrived packets into pkt_fifo
++    int reinit_pending;
++
+     // options set by the caller
+     int async_depth;
+     int iopattern;
+@@ -73,6 +84,8 @@
+                   AVFrame *frame, int *got_frame,
+                   AVPacket *avpkt);
+
++void ff_qsv_decode_reset(AVCodecContext *avctx, QSVContext *q);
++
+ int ff_qsv_decode_close(QSVContext *q);
+
+ #endif /* AVCODEC_QSVDEC_H */
+
+--- a/libavcodec/qsvdec_mpeg2.c
++++ b/libavcodec/qsvdec_mpeg2.c
+@@ -57,6 +57,8 @@
+
+ static void qsv_decode_flush(AVCodecContext *avctx)
+ {
++    QSVMPEG2Context *s = avctx->priv_data;
++    ff_qsv_decode_reset(avctx, &s->qsv);
+ }
+
+ AVHWAccel ff_mpeg2_qsv_hwaccel = {
+

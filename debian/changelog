@@ -1,4 +1,4 @@
-sffmpeg (2.8.3) stable; urgency=medium
+qsv-sffmpeg (2.8.3) stable; urgency=medium
 
   * upgrade to ffmpeg 2.8.3
 
