@@ -52,12 +52,36 @@ From there, you may use the binary immediately or build a Debian package for lat
 
 You may optionally build a Debian package by typing the following command at the shell prompt:
 
-    $ make deb
+  $ make deb
 
 The `ffmpeg` and i`ffprobe` binaries will be installed by the package in the `/usr/bin` directory.
 
-    $ sudo dpkg -i sffmpeg_2.8.3_amd64.deb
-    Selecting previously unselected package sffmpeg.
-    Unpacking sffmpeg (from sffmpeg_2.8.3_amd64.deb) ...
-    Setting up sffmpeg (2.8.3) ...
+  $ sudo dpkg -i sffmpeg_2.8.3_amd64.deb
+  Selecting previously unselected package sffmpeg.
+  Unpacking sffmpeg (from sffmpeg_2.8.3_amd64.deb) ...
+  Setting up sffmpeg (2.8.3) ...
 
+
+# Dockerfile builder
+
+This Docker image will build a static version of `ffmpeg` and `ffprobe` using [github.com/pyke369/sffmpeg](https://github.com/pyke369/sffmpeg).
+
+The binaries are Linux binaries and will be stored in `/sffmpeg/build/bin`.
+
+You must mount this directory to be get the binaries.
+
+## Usage
+
+The first step is to create a directory for the static binaries:
+
+  ```
+  $ mkdir ffmpeg-bin
+  ```
+
+Then you can start the build process:
+
+  ```
+  $ docker build . --name sffmpeg-builder && docker run --rm -v $PWD/ffmpeg-bin:/ffmpeg-bin sffmpeg-builder:latest
+  ```
+
+When the container will exit, you should have your Linux binaries in the `ffmpeg-bin` directory.
