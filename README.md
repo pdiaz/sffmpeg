@@ -83,7 +83,7 @@ The first step is to create a directory for the static binaries:
 Then you can start the build process:
 
   ```
-  $ docker build . --name sffmpeg-builder && docker run --rm -v $PWD/ffmpeg-bin:/ffmpeg-bin sffmpeg-builder:latest
+  $ docker build --tag=sffmpeg-builder .  && docker run --rm -v $PWD/ffmpeg-bin:/ffmpeg-bin sffmpeg-builder:latest
   ```
 
 When the container will exit, you should have your Linux binaries in the `ffmpeg-bin` directory.
