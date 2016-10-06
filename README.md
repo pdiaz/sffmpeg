@@ -57,11 +57,10 @@ You may optionally build a Debian package by typing the following command at the
 
 The `ffmpeg`, `ffprobe` and `frmxtract` binaries will be installed by the package in the `/usr/bin` directory.
 
-<<<<<<< HEAD
-  $ sudo dpkg -i sffmpeg_2.8.3_amd64.deb
+  $ sudo dpkg -i sffmpeg_3.0.1_amd64.deb
   Selecting previously unselected package sffmpeg.
-  Unpacking sffmpeg (from sffmpeg_2.8.3_amd64.deb) ...
-  Setting up sffmpeg (2.8.3) ...
+  Unpacking sffmpeg (from sffmpeg_3.0.1_amd64.deb) ...
+  Setting up sffmpeg (3.0.1) ...
 
 
 # Dockerfile builder
@@ -83,14 +82,7 @@ The first step is to create a directory for the static binaries:
 Then you can start the build process:
 
   ```
-  $ docker build --tag=sffmpeg-builder .  && docker run --rm -v $PWD/ffmpeg-bin:/ffmpeg-bin sffmpeg-builder:latest
+  $ ./build.sh
   ```
 
 When the container will exit, you should have your Linux binaries in the `ffmpeg-bin` directory.
-=======
-    $ sudo dpkg -i sffmpeg_3.0_amd64.deb
-    Selecting previously unselected package sffmpeg.
-    Unpacking sffmpeg (from sffmpeg_3.0_amd64.deb) ...
-    Setting up sffmpeg (3.0) ...
-
->>>>>>> 6accf0ffb0da7723685924471c67b04f063bcfc8

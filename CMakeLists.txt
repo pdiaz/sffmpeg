@@ -26,7 +26,7 @@ EXTERNALPROJECT_ADD(
   URL http://www.openssl.org/source/openssl-1.0.2-latest.tar.gz
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh openssl
   CONFIGURE_COMMAND ./config no-shared no-idea no-mdc2 no-rc5 --prefix=${CMAKE_BINARY_DIR}
-  BUILD_COMMAND make depend && make
+  BUILD_COMMAND make depend && make -j 4
   INSTALL_COMMAND make install_sw
   BUILD_IN_SOURCE 1
 )
@@ -102,7 +102,7 @@ EXTERNALPROJECT_ADD(
   URL http://downloads.xvid.org/downloads/xvidcore-1.3.4.tar.gz
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh xvidcore
   CONFIGURE_COMMAND cd build/generic && PATH=$ENV{PATH} ./configure --prefix=${CMAKE_BINARY_DIR}
-  BUILD_COMMAND cd build/generic && PATH=$ENV{PATH} make
+  BUILD_COMMAND cd build/generic && PATH=$ENV{PATH} make -j 4
   INSTALL_COMMAND cd build/generic && make install
   BUILD_IN_SOURCE 1
 )
@@ -113,7 +113,7 @@ EXTERNALPROJECT_ADD(
   UPDATE_COMMAND ""
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh x264
   CONFIGURE_COMMAND PATH=$ENV{PATH} ./configure --prefix=${CMAKE_BINARY_DIR} --enable-static
-  BUILD_COMMAND PATH=$ENV{PATH} make
+  BUILD_COMMAND PATH=$ENV{PATH} make -j 4
   BUILD_IN_SOURCE 1
 )
 EXTERNALPROJECT_ADD(
@@ -123,17 +123,17 @@ EXTERNALPROJECT_ADD(
   UPDATE_COMMAND hg update -r stable
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh x265
   CONFIGURE_COMMAND cd build/linux && PATH=$ENV{PATH} cmake -G "Unix Makefiles" -D CMAKE_INSTALL_PREFIX:PATH=${CMAKE_BINARY_DIR} -D ENABLE_CLI:BOOL=OFF -D ENABLE_SHARED:BOOL=OFF ../../source
-  BUILD_COMMAND cd build/linux && PATH=$ENV{PATH} make
+  BUILD_COMMAND cd build/linux && PATH=$ENV{PATH} make -j 4
   INSTALL_COMMAND cd build/linux && PATH=$ENV{PATH} make install
   BUILD_IN_SOURCE 1
 )
 EXTERNALPROJECT_ADD(
   libvpx
   DEPENDS yasm
-  URL http://storage.googleapis.com/downloads.webmproject.org/releases/webm/libvpx-1.5.0.tar.bz2
+  URL https://storage.googleapis.com/downloads.webmproject.org/releases/webm/libvpx-1.5.0.tar.bz2
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh libvpx
   CONFIGURE_COMMAND PATH=$ENV{PATH} ./configure --prefix=${CMAKE_BINARY_DIR} --disable-shared
-  BUILD_COMMAND PATH=$ENV{PATH} make
+  BUILD_COMMAND PATH=$ENV{PATH} make -j 4
   BUILD_IN_SOURCE 1
 )
 EXTERNALPROJECT_ADD(
@@ -164,7 +164,7 @@ EXTERNALPROJECT_ADD(
 )
 EXTERNALPROJECT_ADD(
   expat
-  URL http://downloads.sourceforge.net/project/expat/expat/2.1.0/expat-2.1.0.tar.gz
+  URL https://downloads.sourceforge.net/project/expat/expat/2.1.1/expat-2.1.1.tar.bz2
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh expat
   CONFIGURE_COMMAND PKG_CONFIG_PATH=$ENV{PKG_CONFIG_PATH} ./configure --prefix=${CMAKE_BINARY_DIR} --disable-shared --enable-static
   BUILD_IN_SOURCE 1
@@ -172,7 +172,7 @@ EXTERNALPROJECT_ADD(
 EXTERNALPROJECT_ADD(
   fontconfig
   DEPENDS freetype expat
-  URL http://www.freedesktop.org/software/fontconfig/release/fontconfig-2.11.94.tar.bz2
+  URL https://www.freedesktop.org/software/fontconfig/release/fontconfig-2.11.95.tar.bz2
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh fontconfig
   CONFIGURE_COMMAND PKG_CONFIG_PATH=$ENV{PKG_CONFIG_PATH} ./configure --prefix=${CMAKE_BINARY_DIR} --disable-shared --enable-static
   BUILD_IN_SOURCE 1
@@ -183,22 +183,22 @@ EXTERNALPROJECT_ADD(
   URL https://github.com/libass/libass/releases/download/0.13.2/libass-0.13.2.tar.gz
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh libass
   CONFIGURE_COMMAND PATH=$ENV{PATH} PKG_CONFIG_PATH=$ENV{PKG_CONFIG_PATH} ./configure --prefix=${CMAKE_BINARY_DIR} --disable-shared --enable-static
-  BUILD_COMMAND PATH=$ENV{PATH} make
+  BUILD_COMMAND PATH=$ENV{PATH} make -j 4
   BUILD_IN_SOURCE 1
 )
 EXTERNALPROJECT_ADD(
   ffmpeg
   DEPENDS yasm opencore-amr faac fdkaac lame libogg speex libvorbis libtheora opus xvidcore x264 x265 libvpx rtmpdump freetype libass
-  URL http://www.ffmpeg.org/releases/ffmpeg-3.0.1.tar.bz2
+  URL https://www.ffmpeg.org/releases/ffmpeg-3.1.2.tar.bz2
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh ffmpeg
   CONFIGURE_COMMAND PATH=$ENV{PATH} PKG_CONFIG_PATH=$ENV{PKG_CONFIG_PATH} ./configure --prefix=${CMAKE_BINARY_DIR} --datadir=${CMAKE_BINARY_DIR}/etc --disable-shared --enable-static --enable-gpl --enable-version3 --enable-nonfree --disable-doc --disable-debug --disable-ffplay --disable-ffserver --disable-outdevs --enable-runtime-cpudetect --enable-memalign-hack --extra-cflags=-I${CMAKE_BINARY_DIR}/include\ --static --extra-ldflags=-L${CMAKE_BINARY_DIR}/lib --extra-libs=-lstdc++\ -lexpat\ -ldl --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libfaac --enable-libfdk-aac --enable-libmp3lame --enable-libspeex --enable-libtheora --enable-libvorbis --enable-libx264 --enable-libx265 --enable-libxvid --enable-libvpx --enable-libopus --enable-librtmp --enable-libfreetype --enable-libass --enable-netcdf
-  BUILD_COMMAND PATH=$ENV{PATH} make
+  BUILD_COMMAND PATH=$ENV{PATH} make -j 4
   BUILD_IN_SOURCE 1
 )
 EXTERNALPROJECT_ADD(
   libpng
   DEPENDS zlib
-  URL http://download.sourceforge.net/libpng/libpng-1.6.21.tar.gz
+  URL https://download.sourceforge.net/libpng/libpng-1.6.21.tar.gz
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh libpng
   CONFIGURE_COMMAND CFLAGS=-I${CMAKE_BINARY_DIR}/include CPPFLAGS=-I${CMAKE_BINARY_DIR}/include LDFLAGS=-L${CMAKE_BINARY_DIR}/lib ./configure --prefix=${CMAKE_BINARY_DIR} --disable-shared --enable-static
   BUILD_IN_SOURCE 1
@@ -206,7 +206,7 @@ EXTERNALPROJECT_ADD(
 EXTERNALPROJECT_ADD(
   frmxtract
   DEPENDS ffmpeg libpng
-  URL ${CMAKE_SOURCE_DIR}/vendor/frmxtract-3.0.tar.gz
+  URL ${CMAKE_SOURCE_DIR}/vendor/frmxtract-3.0.2.tar.gz
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh frmxtract
   CONFIGURE_COMMAND CC=${CMAKE_C_COMPILER} PKG_CONFIG_PATH=$ENV{PKG_CONFIG_PATH} ./configure --prefix=${CMAKE_BINARY_DIR}
   BUILD_IN_SOURCE 1

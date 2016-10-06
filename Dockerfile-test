@@ -1,0 +1,13 @@
+FROM ubuntu:trusty
+
+RUN apt-get update && apt-get upgrade -y
+
+#RUN apt-get install libnetcdfc7 -y
+
+WORKDIR /app
+
+COPY ../sffmpeg_*.deb /app/
+
+RUN pwd ; find . ; dpkg -i sffmpeg_*.deb
+
+CMD ffmpeg -h full
