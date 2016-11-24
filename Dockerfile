@@ -1,7 +1,7 @@
-FROM ubuntu:trusty
+FROM ubuntu:xenial
 
 RUN apt-get update && apt-get upgrade -y
-RUN apt-get install -y git build-essential devscripts debhelper unzip libnetcdf-dev \
+RUN apt-get install -y git build-essential devscripts debhelper unzip \
     cmake automake libtool pkg-config curl mercurial
 
 WORKDIR /sffmpeg
