@@ -2,8 +2,8 @@ Source: sffmpeg
 Priority: optional
 Section: video
 Maintainer: Pierre-Yves Kerembellec <py.kerembellec@gmail.com>
-Build-Depends: debhelper (>= 7), cmake (>= 2.8.8), pkg-config, autoconf, automake, libtool, git-core, mercurial, unzip, curl, libnetcdf-dev
-Depends: libnetcdfc7
+Build-Depends: debhelper (>= 7), cmake (>= 2.8.8), pkg-config, autoconf, automake, libtool, git-core, mercurial, unzip, curl
+Depends:
 Standards-Version: 3.7.2
 
 Package: sffmpeg

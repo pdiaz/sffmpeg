@@ -2,7 +2,7 @@ sffmpeg:
 	@mkdir -p build && \
 	cd build && \
 	cmake -DCMAKE_BUILD_TYPE=Release .. && \
-	make -j 4
+	make ${MAKEJ}
 
 distclean:
 	@rm -rf build

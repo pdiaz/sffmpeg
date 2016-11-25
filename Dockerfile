@@ -1,6 +1,7 @@
 FROM ubuntu:xenial
 
-RUN apt-get update && apt-get upgrade -y
+RUN apt-get update
+RUN apt-get upgrade -y
 RUN apt-get install -y git build-essential devscripts debhelper unzip \
     cmake automake libtool pkg-config curl mercurial
 
@@ -10,4 +11,4 @@ VOLUME /ffmpeg-bin
 
 COPY ./ /sffmpeg/
 
-CMD make deb && cp /sffmpeg*.deb /ffmpeg-bin
+CMD MAKEJ=-j8 make deb && cp /sffmpeg*.deb /ffmpeg-bin

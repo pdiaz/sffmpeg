@@ -12,57 +12,64 @@ EXTERNALPROJECT_ADD(
   URL http://zlib.net/zlib-1.2.8.tar.gz
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh zlib
   CONFIGURE_COMMAND ./configure --prefix=${CMAKE_BINARY_DIR} --static
+  BUILD_COMMAND make $ENV{MAKEJ}
   BUILD_IN_SOURCE 1
 )
 EXTERNALPROJECT_ADD(
   hdf5
-  URL https://support.hdfgroup.org/ftp/HDF5/current18/src/CMake-hdf5-1.8.18.tar.gz
+  DEPENDS zlib
+  URL https://support.hdfgroup.org/ftp/HDF5/current18/src/hdf5-1.8.18.tar.gz
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh hdf5
-  CONFIGURE_COMMAND ./configure --prefix=${CMAKE_BINARY_DIR}
+  CONFIGURE_COMMAND ./configure --prefix=${CMAKE_BINARY_DIR} --disable-shared --enable-production
+  BUILD_COMMAND make lib $ENV{MAKEJ}
   BUILD_IN_SOURCE 1
 )
 EXTERNALPROJECT_ADD(
   netcdf
+  DEPENDS zlib hdf5
   URL https://github.com/Unidata/netcdf-c/archive/v4.4.1.1.tar.gz
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh netcdf
-  CONFIGURE_COMMAND ./configure --prefix=${CMAKE_BINARY_DIR}
+  CONFIGURE_COMMAND ./configure --disable-netcdf-4 --prefix=${CMAKE_BINARY_DIR} --disable-shared
+  BUILD_COMMAND make $ENV{MAKEJ}
   BUILD_IN_SOURCE 1
 )
 EXTERNALPROJECT_ADD(
   yasm
-  URL http://www.tortall.net/projects/yasm/releases/yasm-1.3.0.tar.gz
+  URL https://www.tortall.net/projects/yasm/releases/yasm-1.3.0.tar.gz
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh yasm
   CONFIGURE_COMMAND ./configure --prefix=${CMAKE_BINARY_DIR}
   BUILD_IN_SOURCE 1
 )
 EXTERNALPROJECT_ADD(
   openssl
-  URL http://www.openssl.org/source/openssl-1.0.2-latest.tar.gz
+  URL https://www.openssl.org/source/openssl-1.0.2j.tar.gz
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh openssl
   CONFIGURE_COMMAND ./config no-shared no-idea no-mdc2 no-rc5 --prefix=${CMAKE_BINARY_DIR}
-  BUILD_COMMAND make depend && make -j 4
+  BUILD_COMMAND make depend && make $ENV{MAKEJ}
   INSTALL_COMMAND make install_sw
   BUILD_IN_SOURCE 1
 )
 EXTERNALPROJECT_ADD(
   opencore-amr
-  URL http://downloads.sourceforge.net/project/opencore-amr/opencore-amr/opencore-amr-0.1.3.tar.gz
+  URL https://downloads.sourceforge.net/project/opencore-amr/opencore-amr/opencore-amr-0.1.3.tar.gz
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh opencore-amr
   CONFIGURE_COMMAND ./configure --prefix=${CMAKE_BINARY_DIR} --disable-shared
   BUILD_IN_SOURCE 1
 )
 EXTERNALPROJECT_ADD(
   fdkaac
-  URL http://downloads.sourceforge.net/project/opencore-amr/fdk-aac/fdk-aac-0.1.4.tar.gz
+  URL https://downloads.sourceforge.net/project/opencore-amr/fdk-aac/fdk-aac-0.1.4.tar.gz
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh fdkaac
   CONFIGURE_COMMAND ./configure --prefix=${CMAKE_BINARY_DIR} --disable-shared --enable-static
+  BUILD_COMMAND make $ENV{MAKEJ}
   BUILD_IN_SOURCE 1
 )
 EXTERNALPROJECT_ADD(
   lame
-  URL http://downloads.sourceforge.net/project/lame/lame/3.99/lame-3.99.5.tar.gz
+  URL https://downloads.sourceforge.net/project/lame/lame/3.99/lame-3.99.5.tar.gz
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh lame
   CONFIGURE_COMMAND ./configure --prefix=${CMAKE_BINARY_DIR} --disable-shared
+  BUILD_COMMAND make $ENV{MAKEJ}
   BUILD_IN_SOURCE 1
 )
 EXTERNALPROJECT_ADD(
@@ -70,6 +77,7 @@ EXTERNALPROJECT_ADD(
   URL http://downloads.xiph.org/releases/ogg/libogg-1.3.2.tar.gz
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh libogg
   CONFIGURE_COMMAND ./configure --prefix=${CMAKE_BINARY_DIR} --disable-shared
+  BUILD_COMMAND make $ENV{MAKEJ}
   BUILD_IN_SOURCE 1
 )
 EXTERNALPROJECT_ADD(
@@ -78,6 +86,7 @@ EXTERNALPROJECT_ADD(
   URL http://downloads.xiph.org/releases/speex/speex-1.2rc2.tar.gz
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh speex
   CONFIGURE_COMMAND ./configure --prefix=${CMAKE_BINARY_DIR} --disable-shared --enable-sse  --disable-oggtest --with-ogg=${CMAKE_BINARY_DIR}
+  BUILD_COMMAND make $ENV{MAKEJ}
   BUILD_IN_SOURCE 1
 )
 EXTERNALPROJECT_ADD(
@@ -86,6 +95,7 @@ EXTERNALPROJECT_ADD(
   URL http://downloads.xiph.org/releases/vorbis/libvorbis-1.3.5.tar.gz
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh libvorbis
   CONFIGURE_COMMAND ./configure --prefix=${CMAKE_BINARY_DIR} --disable-shared --disable-oggtest
+  BUILD_COMMAND make $ENV{MAKEJ}
   BUILD_IN_SOURCE 1
 )
 EXTERNALPROJECT_ADD(
@@ -94,6 +104,7 @@ EXTERNALPROJECT_ADD(
   URL http://downloads.xiph.org/releases/theora/libtheora-1.2.0alpha1.tar.gz
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh libtheora
   CONFIGURE_COMMAND ./configure --prefix=${CMAKE_BINARY_DIR} --disable-shared --disable-oggtest --disable-examples --with-ogg=${CMAKE_BINARY_DIR}
+  BUILD_COMMAND make $ENV{MAKEJ}
   BUILD_IN_SOURCE 1
 )
 EXTERNALPROJECT_ADD(
@@ -101,6 +112,7 @@ EXTERNALPROJECT_ADD(
   URL http://downloads.xiph.org/releases/opus/opus-1.1.2.tar.gz
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh opus
   CONFIGURE_COMMAND ./configure --prefix=${CMAKE_BINARY_DIR} --disable-shared --disable-doc
+  BUILD_COMMAND make $ENV{MAKEJ}
   BUILD_IN_SOURCE 1
 )
 EXTERNALPROJECT_ADD(
@@ -109,7 +121,7 @@ EXTERNALPROJECT_ADD(
   URL http://downloads.xvid.org/downloads/xvidcore-1.3.4.tar.gz
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh xvidcore
   CONFIGURE_COMMAND cd build/generic && PATH=$ENV{PATH} ./configure --prefix=${CMAKE_BINARY_DIR}
-  BUILD_COMMAND cd build/generic && PATH=$ENV{PATH} make -j 4
+  BUILD_COMMAND cd build/generic && PATH=$ENV{PATH} make $ENV{MAKEJ}
   INSTALL_COMMAND cd build/generic && make install
   BUILD_IN_SOURCE 1
 )
@@ -120,7 +132,7 @@ EXTERNALPROJECT_ADD(
   UPDATE_COMMAND ""
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh x264
   CONFIGURE_COMMAND PATH=$ENV{PATH} ./configure --prefix=${CMAKE_BINARY_DIR} --enable-static
-  BUILD_COMMAND PATH=$ENV{PATH} make -j 4
+  BUILD_COMMAND PATH=$ENV{PATH} make $ENV{MAKEJ}
   BUILD_IN_SOURCE 1
 )
 EXTERNALPROJECT_ADD(
@@ -130,7 +142,7 @@ EXTERNALPROJECT_ADD(
   UPDATE_COMMAND hg update -r stable
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh x265
   CONFIGURE_COMMAND cd build/linux && PATH=$ENV{PATH} cmake -G "Unix Makefiles" -D CMAKE_INSTALL_PREFIX:PATH=${CMAKE_BINARY_DIR} -D ENABLE_CLI:BOOL=OFF -D ENABLE_SHARED:BOOL=OFF ../../source
-  BUILD_COMMAND cd build/linux && PATH=$ENV{PATH} make -j 4
+  BUILD_COMMAND cd build/linux && PATH=$ENV{PATH} make $ENV{MAKEJ}
   INSTALL_COMMAND cd build/linux && PATH=$ENV{PATH} make install
   BUILD_IN_SOURCE 1
 )
@@ -140,7 +152,7 @@ EXTERNALPROJECT_ADD(
   URL https://storage.googleapis.com/downloads.webmproject.org/releases/webm/libvpx-1.5.0.tar.bz2
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh libvpx
   CONFIGURE_COMMAND PATH=$ENV{PATH} ./configure --prefix=${CMAKE_BINARY_DIR} --disable-shared
-  BUILD_COMMAND PATH=$ENV{PATH} make -j 4
+  BUILD_COMMAND PATH=$ENV{PATH} make $ENV{MAKEJ}
   BUILD_IN_SOURCE 1
 )
 EXTERNALPROJECT_ADD(
@@ -190,12 +202,12 @@ EXTERNALPROJECT_ADD(
   URL https://github.com/libass/libass/releases/download/0.13.2/libass-0.13.2.tar.gz
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh libass
   CONFIGURE_COMMAND PATH=$ENV{PATH} PKG_CONFIG_PATH=$ENV{PKG_CONFIG_PATH} ./configure --prefix=${CMAKE_BINARY_DIR} --disable-shared --enable-static
-  BUILD_COMMAND PATH=$ENV{PATH} make -j 4
+  BUILD_COMMAND PATH=$ENV{PATH} make $ENV{MAKEJ}
   BUILD_IN_SOURCE 1
 )
 EXTERNALPROJECT_ADD(
   ffmpeg
-  DEPENDS yasm opencore-amr faac fdkaac lame libogg speex libvorbis libtheora opus xvidcore x264 x265 libvpx rtmpdump freetype libass
+  DEPENDS openssl netcdf yasm opencore-amr fdkaac lame libogg speex libvorbis libtheora opus xvidcore x264 x265 libvpx rtmpdump freetype libass
   URL https://www.ffmpeg.org/releases/ffmpeg-3.2.tar.bz2
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh ffmpeg
   CONFIGURE_COMMAND PATH=$ENV{PATH} PKG_CONFIG_PATH=$ENV{PKG_CONFIG_PATH} ./configure --prefix=${CMAKE_BINARY_DIR} --datadir=${CMAKE_BINARY_DIR}/etc --disable-shared --enable-static --enable-gpl --enable-version3 --enable-nonfree --disable-doc --disable-debug --disable-ffplay --disable-ffserver --disable-outdevs --enable-runtime-cpudetect --enable-memalign-hack --extra-cflags=-I${CMAKE_BINARY_DIR}/include\ --static --extra-ldflags=-L${CMAKE_BINARY_DIR}/lib --extra-libs=-lstdc++\ -lexpat\ -ldl --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libfdk-aac --enable-libmp3lame --enable-libspeex --enable-libtheora --enable-libvorbis --enable-libx264 --enable-libx265 --enable-libxvid --enable-libvpx --enable-libopus --enable-librtmp --enable-libfreetype --enable-libass --enable-netcdf --enable-openssl
