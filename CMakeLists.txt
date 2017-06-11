@@ -6,6 +6,7 @@ INCLUDE_DIRECTORIES(BEFORE ${CMAKE_BINARY_DIR}/include)
 LINK_DIRECTORIES(${CMAKE_BINARY_DIR}/lib)
 SET(ENV{PATH} ${CMAKE_BINARY_DIR}/bin:$ENV{PATH})
 SET(ENV{PKG_CONFIG_PATH} ${CMAKE_BINARY_DIR}/lib/pkgconfig)
+SET(ENV{MAKEJ} -j8)
 
 EXTERNALPROJECT_ADD(
   zlib
@@ -13,6 +14,7 @@ EXTERNALPROJECT_ADD(
   URL ${CMAKE_SOURCE_DIR}/vendor/zlib-v1.2.11.tar.gz
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh zlib
   CONFIGURE_COMMAND ./configure --prefix=${CMAKE_BINARY_DIR} --static
+  BUILD_COMMAND make $ENV{MAKEJ}
   BUILD_IN_SOURCE 1
 )
 EXTERNALPROJECT_ADD(
@@ -39,6 +41,7 @@ EXTERNALPROJECT_ADD(
   URL ${CMAKE_SOURCE_DIR}/vendor/yasm-1.3.0.tar.gz
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh yasm
   CONFIGURE_COMMAND ./configure --prefix=${CMAKE_BINARY_DIR}
+  BUILD_COMMAND make $ENV{MAKEJ}
   BUILD_IN_SOURCE 1
 )
 EXTERNALPROJECT_ADD(
@@ -57,6 +60,7 @@ EXTERNALPROJECT_ADD(
   URL ${CMAKE_SOURCE_DIR}/vendor/opencore-amr-0.1.5.tar.gz
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh opencore-amr
   CONFIGURE_COMMAND ./configure --prefix=${CMAKE_BINARY_DIR} --disable-shared
+  BUILD_COMMAND make $ENV{MAKEJ}
   BUILD_IN_SOURCE 1
 )
 EXTERNALPROJECT_ADD(
@@ -93,6 +97,7 @@ EXTERNALPROJECT_ADD(
   URL ${CMAKE_SOURCE_DIR}/vendor/speex-1.2.0.tar.gz
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh speex
   CONFIGURE_COMMAND ./configure --prefix=${CMAKE_BINARY_DIR} --disable-shared --enable-sse  --disable-oggtest --with-ogg=${CMAKE_BINARY_DIR}
+  BUILD_COMMAND make $ENV{MAKEJ}
   BUILD_IN_SOURCE 1
 )
 EXTERNALPROJECT_ADD(
@@ -175,7 +180,7 @@ EXTERNALPROJECT_ADD(
   UPDATE_COMMAND ""
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh rtmpdump
   CONFIGURE_COMMAND ""
-  BUILD_COMMAND make PREFIX=${CMAKE_BINARY_DIR} SHARED= XCFLAGS=-I${CMAKE_BINARY_DIR}/include XLDFLAGS=-L${CMAKE_BINARY_DIR}/lib XLIBS=-ldl
+  BUILD_COMMAND make $ENV{MAKEJ} PREFIX=${CMAKE_BINARY_DIR} SHARED= XCFLAGS=-I${CMAKE_BINARY_DIR}/include XLDFLAGS=-L${CMAKE_BINARY_DIR}/lib XLIBS=-ldl
   INSTALL_COMMAND make PREFIX=${CMAKE_BINARY_DIR} SHARED= install
   BUILD_IN_SOURCE 1
 )
@@ -186,6 +191,7 @@ EXTERNALPROJECT_ADD(
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh freetype
   CONFIGURE_COMMAND ./configure --prefix=${CMAKE_BINARY_DIR} --disable-shared --enable-static --without-png
   INSTALL_COMMAND make install && ln -s ${CMAKE_BINARY_DIR}/include/freetype2 ${CMAKE_BINARY_DIR}/include/freetype2/freetype
+  BUILD_COMMAND PATH=$ENV{PATH} make $ENV{MAKEJ}
   BUILD_IN_SOURCE 1
 )
 EXTERNALPROJECT_ADD(
@@ -194,6 +200,7 @@ EXTERNALPROJECT_ADD(
   URL ${CMAKE_SOURCE_DIR}/vendor/fribidi-0.19.7.tar.bz2
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh fribidi
   CONFIGURE_COMMAND ./configure --prefix=${CMAKE_BINARY_DIR} --disable-shared --enable-static
+  BUILD_COMMAND PATH=$ENV{PATH} make $ENV{MAKEJ}
   BUILD_IN_SOURCE 1
 )
 EXTERNALPROJECT_ADD(
@@ -202,6 +209,7 @@ EXTERNALPROJECT_ADD(
   URL ${CMAKE_SOURCE_DIR}/vendor/expat-2.2.0.tar.bz2
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh expat
   CONFIGURE_COMMAND PKG_CONFIG_PATH=$ENV{PKG_CONFIG_PATH} ./configure --prefix=${CMAKE_BINARY_DIR} --disable-shared --enable-static
+  BUILD_COMMAND PATH=$ENV{PATH} make $ENV{MAKEJ}
   BUILD_IN_SOURCE 1
 )
 EXTERNALPROJECT_ADD(
@@ -211,6 +219,7 @@ EXTERNALPROJECT_ADD(
   URL ${CMAKE_SOURCE_DIR}/vendor/fontconfig-2.12.1.tar.bz2
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh fontconfig
   CONFIGURE_COMMAND PKG_CONFIG_PATH=$ENV{PKG_CONFIG_PATH} ./configure --prefix=${CMAKE_BINARY_DIR} --disable-shared --enable-static
+  BUILD_COMMAND PATH=$ENV{PATH} make $ENV{MAKEJ}
   BUILD_IN_SOURCE 1
 )
 EXTERNALPROJECT_ADD(
@@ -225,12 +234,12 @@ EXTERNALPROJECT_ADD(
 )
 EXTERNALPROJECT_ADD(
   ffmpeg
-  DEPENDS yasm opencore-amr fdkaac lame libogg speex libvorbis libtheora opus xvidcore x264 x265 libvpx rtmpdump freetype libass
+  DEPENDS yasm opencore-amr fdkaac lame libogg speex libvorbis libtheora opus xvidcore x264 x265 libvpx rtmpdump freetype libass openssl
   # URL http://www.ffmpeg.org/releases/ffmpeg-3.3.tar.bz2
   URL ${CMAKE_SOURCE_DIR}/vendor/ffmpeg-3.3.tar.bz2
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh ffmpeg
-  CONFIGURE_COMMAND PATH=$ENV{PATH} PKG_CONFIG_PATH=$ENV{PKG_CONFIG_PATH} ./configure --prefix=${CMAKE_BINARY_DIR} --datadir=${CMAKE_BINARY_DIR}/etc --disable-shared --enable-static --enable-gpl --enable-version3 --enable-nonfree --disable-doc --disable-debug --disable-ffplay --disable-ffserver --disable-outdevs --enable-runtime-cpudetect --extra-cflags=-I${CMAKE_BINARY_DIR}/include\ --static --extra-ldflags=-L${CMAKE_BINARY_DIR}/lib --extra-libs=-lstdc++\ -lexpat\ -ldl --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libfdk-aac --enable-libmp3lame --enable-libspeex --enable-libtheora --enable-libvorbis --enable-libx264 --enable-libx265 --enable-libxvid --enable-libvpx --enable-libopus --enable-librtmp --enable-libfreetype --enable-libass
-  BUILD_COMMAND PATH=$ENV{PATH} make
+  CONFIGURE_COMMAND PATH=$ENV{PATH} PKG_CONFIG_PATH=$ENV{PKG_CONFIG_PATH} ./configure --prefix=${CMAKE_BINARY_DIR} --datadir=${CMAKE_BINARY_DIR}/etc --disable-shared --enable-static --enable-gpl --enable-version3 --enable-nonfree --disable-doc --disable-debug --disable-ffplay --disable-ffserver --disable-outdevs --enable-runtime-cpudetect --extra-cflags=-I${CMAKE_BINARY_DIR}/include\ --static --extra-ldflags=-L${CMAKE_BINARY_DIR}/lib --extra-libs=-lstdc++\ -lexpat\ -ldl --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libfdk-aac --enable-libmp3lame --enable-libspeex --enable-libtheora --enable-libvorbis --enable-libx264 --enable-libx265 --enable-libxvid --enable-libvpx --enable-libopus --enable-librtmp --enable-libfreetype --enable-libass --enable-openssl
+  BUILD_COMMAND PATH=$ENV{PATH} make $ENV{MAKEJ}
   BUILD_IN_SOURCE 1
 )
 EXTERNALPROJECT_ADD(
@@ -240,6 +249,7 @@ EXTERNALPROJECT_ADD(
   URL ${CMAKE_SOURCE_DIR}/vendor/libpng-1.6.29.tar.gz
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh libpng
   CONFIGURE_COMMAND CFLAGS=-I${CMAKE_BINARY_DIR}/include CPPFLAGS=-I${CMAKE_BINARY_DIR}/include LDFLAGS=-L${CMAKE_BINARY_DIR}/lib ./configure --prefix=${CMAKE_BINARY_DIR} --disable-shared --enable-static
+  BUILD_COMMAND PATH=$ENV{PATH} make $ENV{MAKEJ}
   BUILD_IN_SOURCE 1
 )
 EXTERNALPROJECT_ADD(
@@ -248,5 +258,6 @@ EXTERNALPROJECT_ADD(
   URL ${CMAKE_SOURCE_DIR}/vendor/frmxtract-3.0.2.tar.gz
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh frmxtract
   CONFIGURE_COMMAND CC=${CMAKE_C_COMPILER} PKG_CONFIG_PATH=$ENV{PKG_CONFIG_PATH} ./configure --prefix=${CMAKE_BINARY_DIR}
+  BUILD_COMMAND PATH=$ENV{PATH} make $ENV{MAKEJ}
   BUILD_IN_SOURCE 1
 )
