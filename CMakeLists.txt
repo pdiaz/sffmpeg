@@ -20,9 +20,10 @@ EXTERNALPROJECT_ADD(
 EXTERNALPROJECT_ADD(
   hdf5
   DEPENDS zlib
-  URL https://support.hdfgroup.org/ftp/HDF5/current18/src/hdf5-1.8.18.tar.gz
+  # URL https://support.hdfgroup.org/ftp/HDF5/current18/src/hdf5-1.8.20.tar.gz
+  URL ${CMAKE_SOURCE_DIR}/vendor/hdf5-1.8.20.tar.gz
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh hdf5
-  CONFIGURE_COMMAND ./configure --prefix=${CMAKE_BINARY_DIR} --disable-shared --enable-production
+  CONFIGURE_COMMAND ./configure --build=$ENV{MACHTYPE} --prefix=${CMAKE_BINARY_DIR} --disable-shared --enable-production
   BUILD_COMMAND make lib $ENV{MAKEJ}
   BUILD_IN_SOURCE 1
 )
@@ -91,16 +92,6 @@ EXTERNALPROJECT_ADD(
   BUILD_IN_SOURCE 1
 )
 EXTERNALPROJECT_ADD(
-  speex
-  DEPENDS libogg
-  # URL http://downloads.xiph.org/releases/speex/speex-1.2.0.tar.gz
-  URL ${CMAKE_SOURCE_DIR}/vendor/speex-1.2.0.tar.gz
-  PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh speex
-  CONFIGURE_COMMAND ./configure --prefix=${CMAKE_BINARY_DIR} --disable-shared --enable-sse  --disable-oggtest --with-ogg=${CMAKE_BINARY_DIR}
-  BUILD_COMMAND make $ENV{MAKEJ}
-  BUILD_IN_SOURCE 1
-)
-EXTERNALPROJECT_ADD(
   libvorbis
   DEPENDS libogg
   # URL http://downloads.xiph.org/releases/vorbis/libvorbis-1.3.5.tar.gz
@@ -116,7 +107,7 @@ EXTERNALPROJECT_ADD(
   # URL http://downloads.xiph.org/releases/theora/libtheora-1.2.0alpha1.tar.gz
   URL ${CMAKE_SOURCE_DIR}/vendor/libtheora-1.2.0alpha1.tar.gz
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh libtheora
-  CONFIGURE_COMMAND ./configure --prefix=${CMAKE_BINARY_DIR} --disable-shared --disable-oggtest --disable-examples --with-ogg=${CMAKE_BINARY_DIR}
+  CONFIGURE_COMMAND ./configure --build=$ENV{MACHTYPE} --prefix=${CMAKE_BINARY_DIR} --disable-shared --disable-oggtest --disable-examples --with-ogg=${CMAKE_BINARY_DIR}
   BUILD_COMMAND make $ENV{MAKEJ}
   BUILD_IN_SOURCE 1
 )
@@ -235,11 +226,11 @@ EXTERNALPROJECT_ADD(
 )
 EXTERNALPROJECT_ADD(
   ffmpeg
-  DEPENDS yasm opencore-amr fdkaac lame libogg speex libvorbis libtheora opus xvidcore x264 x265 libvpx rtmpdump freetype libass openssl
+  DEPENDS yasm opencore-amr fdkaac lame libogg libvorbis libtheora opus xvidcore x264 x265 libvpx rtmpdump freetype libass openssl
   # URL http://www.ffmpeg.org/releases/ffmpeg-3.4.1.tar.bz2
   URL ${CMAKE_SOURCE_DIR}/vendor/ffmpeg-3.4.1.tar.bz2
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh ffmpeg
-  CONFIGURE_COMMAND PATH=$ENV{PATH} PKG_CONFIG_PATH=$ENV{PKG_CONFIG_PATH} ./configure --prefix=${CMAKE_BINARY_DIR} --datadir=${CMAKE_BINARY_DIR}/etc --disable-shared --enable-static --enable-gpl --enable-version3 --enable-nonfree --disable-doc --disable-debug --disable-ffplay --disable-ffserver --disable-outdevs --enable-runtime-cpudetect --extra-cflags=-I${CMAKE_BINARY_DIR}/include\ --static --extra-ldflags=-L${CMAKE_BINARY_DIR}/lib --extra-libs=-lstdc++\ -lexpat\ -ldl --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libfdk-aac --enable-libmp3lame --enable-libspeex --enable-libtheora --enable-libvorbis --enable-libx264 --enable-libx265 --enable-libxvid --enable-libvpx --enable-libopus --enable-librtmp --enable-libfreetype --enable-libass --enable-openssl --enable-vaapi
+  CONFIGURE_COMMAND PATH=$ENV{PATH} PKG_CONFIG_PATH=$ENV{PKG_CONFIG_PATH} ./configure --prefix=${CMAKE_BINARY_DIR} --datadir=${CMAKE_BINARY_DIR}/etc --disable-shared --enable-static --enable-gpl --enable-version3 --enable-nonfree --disable-doc --disable-debug --disable-ffplay --disable-ffserver --disable-outdevs --enable-runtime-cpudetect --extra-cflags=-I${CMAKE_BINARY_DIR}/include\ --static --extra-ldflags=-L${CMAKE_BINARY_DIR}/lib --extra-libs=-lstdc++\ -lexpat\ -ldl --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libfdk-aac --enable-libmp3lame --enable-libtheora --enable-libvorbis --enable-libx264 --enable-libx265 --enable-libxvid --enable-libvpx --enable-libopus --enable-librtmp --enable-libfreetype --enable-libass --enable-openssl --enable-vaapi
   BUILD_COMMAND PATH=$ENV{PATH} make $ENV{MAKEJ}
   BUILD_IN_SOURCE 1
 )

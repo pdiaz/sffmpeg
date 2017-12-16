@@ -1,8 +1,8 @@
 sffmpeg:
 	@mkdir -p build && \
 	cd build && \
-	cmake -DCMAKE_BUILD_TYPE=Release .. && \
-	make ${MAKEJ}
+	MACHTYPE=`uname -m`-linux-gnu cmake -DCMAKE_BUILD_TYPE=Release .. && \
+	MACHTYPE=`uname -m`-linux-gnu make ${MAKEJ}
 
 distclean:
 	@rm -rf build
