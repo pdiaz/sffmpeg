@@ -145,7 +145,7 @@ EXTERNALPROJECT_ADD(
   DEPENDS yasm
   # GIT_REPOSITORY git://git.videolan.org/x264.git
   # UPDATE_COMMAND ""
-  URL ${CMAKE_SOURCE_DIR}/vendor/x264-git.tar.bz2
+  URL ${CMAKE_SOURCE_DIR}/vendor/x264-snapshot-20170716-2245-stable.tar.bz2
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh x264
   CONFIGURE_COMMAND PATH=$ENV{PATH} ./configure --prefix=${CMAKE_BINARY_DIR} --enable-static
   BUILD_COMMAND PATH=$ENV{PATH} make $ENV{MAKEJ}
@@ -156,7 +156,7 @@ EXTERNALPROJECT_ADD(
   DEPENDS yasm
   # DOWNLOAD_COMMAND hg clone --insecure https://bitbucket.org/multicoreware/x265
   # UPDATE_COMMAND hg update -r stable
-  URL ${CMAKE_SOURCE_DIR}/vendor/x265-stable.tar.bz2
+  URL ${CMAKE_SOURCE_DIR}/vendor/x265_2.5.tar.gz
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh x265
   CONFIGURE_COMMAND cd build/linux && PATH=$ENV{PATH} cmake -G "Unix Makefiles" -D CMAKE_INSTALL_PREFIX:PATH=${CMAKE_BINARY_DIR} -D ENABLE_CLI:BOOL=OFF -D ENABLE_SHARED:BOOL=OFF ../../source
   BUILD_COMMAND cd build/linux && PATH=$ENV{PATH} make $ENV{MAKEJ}
@@ -176,8 +176,9 @@ EXTERNALPROJECT_ADD(
 EXTERNALPROJECT_ADD(
   rtmpdump
   DEPENDS zlib openssl
-  GIT_REPOSITORY git://git.ffmpeg.org/rtmpdump
-  UPDATE_COMMAND ""
+  # GIT_REPOSITORY git://git.ffmpeg.org/rtmpdump
+  # UPDATE_COMMAND ""
+  URL ${CMAKE_SOURCE_DIR}/vendor/rtmpdump-2.4.tar.gz
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh rtmpdump
   CONFIGURE_COMMAND ""
   BUILD_COMMAND make $ENV{MAKEJ} PREFIX=${CMAKE_BINARY_DIR} SHARED= XCFLAGS=-I${CMAKE_BINARY_DIR}/include XLDFLAGS=-L${CMAKE_BINARY_DIR}/lib XLIBS=-ldl
@@ -235,10 +236,10 @@ EXTERNALPROJECT_ADD(
 EXTERNALPROJECT_ADD(
   ffmpeg
   DEPENDS yasm opencore-amr fdkaac lame libogg speex libvorbis libtheora opus xvidcore x264 x265 libvpx rtmpdump freetype libass openssl
-  # URL http://www.ffmpeg.org/releases/ffmpeg-3.3.tar.bz2
-  URL ${CMAKE_SOURCE_DIR}/vendor/ffmpeg-3.3.tar.bz2
+  # URL http://www.ffmpeg.org/releases/ffmpeg-3.4.1.tar.bz2
+  URL ${CMAKE_SOURCE_DIR}/vendor/ffmpeg-3.4.1.tar.bz2
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh ffmpeg
-  CONFIGURE_COMMAND PATH=$ENV{PATH} PKG_CONFIG_PATH=$ENV{PKG_CONFIG_PATH} ./configure --prefix=${CMAKE_BINARY_DIR} --datadir=${CMAKE_BINARY_DIR}/etc --disable-shared --enable-static --enable-gpl --enable-version3 --enable-nonfree --disable-doc --disable-debug --disable-ffplay --disable-ffserver --disable-outdevs --enable-runtime-cpudetect --extra-cflags=-I${CMAKE_BINARY_DIR}/include\ --static --extra-ldflags=-L${CMAKE_BINARY_DIR}/lib --extra-libs=-lstdc++\ -lexpat\ -ldl --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libfdk-aac --enable-libmp3lame --enable-libspeex --enable-libtheora --enable-libvorbis --enable-libx264 --enable-libx265 --enable-libxvid --enable-libvpx --enable-libopus --enable-librtmp --enable-libfreetype --enable-libass --enable-openssl
+  CONFIGURE_COMMAND PATH=$ENV{PATH} PKG_CONFIG_PATH=$ENV{PKG_CONFIG_PATH} ./configure --prefix=${CMAKE_BINARY_DIR} --datadir=${CMAKE_BINARY_DIR}/etc --disable-shared --enable-static --enable-gpl --enable-version3 --enable-nonfree --disable-doc --disable-debug --disable-ffplay --disable-ffserver --disable-outdevs --enable-runtime-cpudetect --extra-cflags=-I${CMAKE_BINARY_DIR}/include\ --static --extra-ldflags=-L${CMAKE_BINARY_DIR}/lib --extra-libs=-lstdc++\ -lexpat\ -ldl --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libfdk-aac --enable-libmp3lame --enable-libspeex --enable-libtheora --enable-libvorbis --enable-libx264 --enable-libx265 --enable-libxvid --enable-libvpx --enable-libopus --enable-librtmp --enable-libfreetype --enable-libass --enable-openssl --enable-vaapi
   BUILD_COMMAND PATH=$ENV{PATH} make $ENV{MAKEJ}
   BUILD_IN_SOURCE 1
 )
@@ -255,7 +256,7 @@ EXTERNALPROJECT_ADD(
 EXTERNALPROJECT_ADD(
   frmxtract
   DEPENDS ffmpeg libpng
-  URL ${CMAKE_SOURCE_DIR}/vendor/frmxtract-3.0.2.tar.gz
+  URL ${CMAKE_SOURCE_DIR}/vendor/frmxtract-3.3.3.tar.gz
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh frmxtract
   CONFIGURE_COMMAND CC=${CMAKE_C_COMPILER} PKG_CONFIG_PATH=$ENV{PKG_CONFIG_PATH} ./configure --prefix=${CMAKE_BINARY_DIR}
   BUILD_COMMAND PATH=$ENV{PATH} make $ENV{MAKEJ}

@@ -1,8 +1,20 @@
-sffmpeg (3.3p2) stable; urgency=medium
+sffmpeg (3.4.1) stable; urgency=medium
 
-  * Added https support to ffmpeg
+  * Upgraded to ffmpeg 3.4.1
 
  -- Pedro Diaz <p.diaz@wemersive.com>  Thu, 01 Jun 2017 11:54:33 +0200
+
+sffmpeg (3.3.3) stable; urgency=medium
+
+  * upgrade to ffmpeg 3.3.3
+
+ -- Pierre-Yves Kerembellec <py.kerembellec@gmail.com>  Wed, 16 Aug 2017 15:35:26 +0200
+
+sffmpeg (3.3.2) stable; urgency=medium
+
+  * upgrade to ffmpeg 3.3.2
+
+ -- Pierre-Yves Kerembellec <py.kerembellec@gmail.com>  Thu, 07 Jul 2017 15:22:18 +0200
 
 sffmpeg (3.3p1) stable; urgency=medium
 
