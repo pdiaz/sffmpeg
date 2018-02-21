@@ -227,8 +227,8 @@ EXTERNALPROJECT_ADD(
 EXTERNALPROJECT_ADD(
   ffmpeg
   DEPENDS yasm opencore-amr fdkaac lame libogg libvorbis libtheora opus xvidcore x264 x265 libvpx rtmpdump freetype libass openssl
-  # URL http://www.ffmpeg.org/releases/ffmpeg-3.4.1.tar.bz2
-  URL ${CMAKE_SOURCE_DIR}/vendor/ffmpeg-3.4.1.tar.bz2
+  # URL http://www.ffmpeg.org/releases/ffmpeg-3.4.2.tar.bz2
+  URL ${CMAKE_SOURCE_DIR}/vendor/ffmpeg-3.4.2.tar.bz2
   PATCH_COMMAND ${CMAKE_SOURCE_DIR}/patches/patch-manager.sh ffmpeg
   CONFIGURE_COMMAND PATH=$ENV{PATH} PKG_CONFIG_PATH=$ENV{PKG_CONFIG_PATH} ./configure --prefix=${CMAKE_BINARY_DIR} --datadir=${CMAKE_BINARY_DIR}/etc --disable-shared --enable-static --enable-gpl --enable-version3 --enable-nonfree --disable-doc --disable-debug --disable-ffplay --disable-ffserver --disable-outdevs --enable-runtime-cpudetect --extra-cflags=-I${CMAKE_BINARY_DIR}/include\ --static --extra-ldflags=-L${CMAKE_BINARY_DIR}/lib --extra-libs=-lstdc++\ -lexpat\ -ldl --enable-libopencore-amrnb --enable-libopencore-amrwb --enable-libfdk-aac --enable-libmp3lame --enable-libtheora --enable-libvorbis --enable-libx264 --enable-libx265 --enable-libxvid --enable-libvpx --enable-libopus --enable-librtmp --enable-libfreetype --enable-libass --enable-openssl --enable-vaapi
   BUILD_COMMAND PATH=$ENV{PATH} make $ENV{MAKEJ}
